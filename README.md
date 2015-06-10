@@ -31,3 +31,8 @@ echo extension=epeg.so | sudo tee /etc/php5/mods-available/epeg.ini
 sudo php5enmod epeg
 ```
 
+
+## License
+
+This project is licensed under the [MIT license](http://opensource.org/licenses/MIT).
+

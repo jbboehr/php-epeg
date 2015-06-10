@@ -412,7 +412,7 @@ static PHP_MINIT_FUNCTION(epeg)
 
     // Handlebars\Exception
     INIT_CLASS_ENTRY(ce, "EpegException", NULL);
-    EpegException_ce_ptr = zend_register_internal_class_ex(&ce, exception_ce, NULL);
+    EpegException_ce_ptr = zend_register_internal_class_ex(&ce, exception_ce, NULL TSRMLS_CC);
 
 	return SUCCESS;
 }

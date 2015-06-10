@@ -9,7 +9,12 @@ if (!method_exists('Epeg', 'setDecodeBounds')) {
 ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$epeg = new Epeg($file);
+echo round(strlen($epeg->encode()) / 100), PHP_EOL;
+$epeg->setDecodeBounds(0, 0, 50, 50);
+echo round(strlen($epeg->encode()) / 100), PHP_EOL;
 ?>
 --EXPECT--
-OK
+343
+15

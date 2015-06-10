@@ -4,7 +4,8 @@ Epeg::getComment() method
 <?php include 'skipif_oo.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$epeg = new Epeg(__DIR__ . '/fixture2.jpg');
+var_dump($epeg->getComment());
 ?>
 --EXPECT--
-OK
+string(22) "this is a test comment"

@@ -4,7 +4,11 @@ Epeg::setDecodeColorSpace() method
 <?php include 'skipif_oo.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$epeg = new Epeg($file);
+$epeg->setDecodeColorSpace(EPEG_CMYK);
+echo round(strlen($epeg->encode()) / 100);
 ?>
---EXPECT--
-OK
+--EXPECTF--
+Warning: Epeg::encode(): Failed to decode image in %s
+0

@@ -4,7 +4,9 @@ epeg_close() function
 <?php include 'skipif.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$res = epeg_open($file);
+var_dump(epeg_close($res));
 ?>
 --EXPECT--
-OK
+NULL

@@ -4,7 +4,10 @@ epeg_memory_open() function
 <?php include 'skipif.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$buf = file_get_contents($file);
+$epeg = epeg_memory_open($buf);
+echo round(strlen(epeg_encode($epeg)) / 100);
 ?>
 --EXPECT--
-OK
+343

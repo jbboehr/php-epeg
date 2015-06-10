@@ -4,7 +4,11 @@ Epeg::setComment() method
 <?php include 'skipif_oo.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$epeg = new Epeg(__DIR__ . '/fixture1.jpg');
+$epeg->setComment('this is a test comment');
+$buf = $epeg->encode();
+$epeg2 = new Epeg($buf, true);
+var_dump($epeg2->getComment());
 ?>
 --EXPECT--
-OK
+string(22) "this is a test comment"

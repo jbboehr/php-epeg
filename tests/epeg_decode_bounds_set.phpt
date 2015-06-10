@@ -1,15 +1,13 @@
 --TEST--
-epeg_decode_bounds_set() function
+epeg_decode_bounds_set() method
 --SKIPIF--
-<?php
-include 'skipif.inc';
-if (!function_exists('epeg_decode_bounds_set')) {
-    die('skip epeg_decode_bounds_set() is not available');
-}
-?>
+<?php include 'skipif_oo.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$epeg = epeg_open($file);
+epeg_decode_bounds_set($epeg, 0, 0, 50, 50);
+echo round(strlen(epeg_trim($epeg)) / 100), PHP_EOL;
 ?>
 --EXPECT--
-OK
+14

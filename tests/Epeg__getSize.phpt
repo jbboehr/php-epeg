@@ -4,7 +4,18 @@ Epeg::getSize() method
 <?php include 'skipif_oo.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$epeg = new Epeg($file);
+var_dump($epeg->getSize());
 ?>
 --EXPECT--
-OK
+array(4) {
+  [0]=>
+  int(500)
+  [1]=>
+  int(375)
+  ["width"]=>
+  int(500)
+  ["height"]=>
+  int(375)
+}

@@ -31,6 +31,9 @@
 
 /* {{{ globals */
 
+/* @todo why is this necessary? */
+#define PHP_EPEG_ENABLE_DECODE_BOUNDS_SET
+
 static int le_epeg;
 static zend_class_entry *ce_Epeg = NULL;
 static zend_object_handlers _php_epeg_object_handlers;
@@ -438,11 +441,19 @@ php_epeg_file_open(char *file, int exceptions TSRMLS_DC)
 	char *data = NULL;
 	int data_len = 0;
 	php_epeg_t *im = NULL;
+	int flags = ENFORCE_SAFE_MODE | IGNORE_PATH;
+	
+	if( !exceptions ) {
+		flags |= REPORT_ERRORS;
+	}
 
 	/* open stream for reading */
-	sth = php_stream_open_wrapper(file, "rb",
-			ENFORCE_SAFE_MODE | IGNORE_PATH | REPORT_ERRORS, NULL);
+	sth = php_stream_open_wrapper(file, "rb", flags, NULL);
 	if (!sth) {
+		if( exceptions ) {
+	        zend_throw_exception_ex(EpegException_ce_ptr, 0 TSRMLS_CC, "failed to open stream: %s", file);
+			
+		}
 		return NULL;
 	}
 
@@ -516,7 +527,7 @@ php_epeg_open_wrapper(INTERNAL_FUNCTION_PARAMETERS, int mode)
 
 	/* parse the arguments and open the JPEG image */
 	if (mode & EO_FROM_BUFFER) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S", &str, &str_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
 			RETURN_FALSE;
 		}
 		im = php_epeg_memory_open(str, str_len, 0 TSRMLS_CC);
@@ -976,8 +987,8 @@ static PHP_FUNCTION(epeg_open)
 	char *file = NULL;
 	int file_len = 0;
 	zend_bool is_data = 0;
-	zend_bool is_obj = obj != NULL;
-
+	int is_obj = (obj != NULL ? 1 : 0);
+	
 	/* parse arguments */
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &file, &file_len, &is_data) == FAILURE) {
 		RETURN_FALSE;
@@ -1216,7 +1227,7 @@ static PHP_FUNCTION(epeg_decode_bounds_set)
 /* {{{ proto void epeg_decode_colorspace_set(resource epeg image, int colorspace) */
 /**
  * void epeg_decode_colorspace_set(resource epeg image, int colorspace)
- * void Epeg::getSize(int colorspace)
+ * void Epeg::setDecodeColorSpace(int colorspace)
  *
  * Set the colorspace of the thumbnail.
  *

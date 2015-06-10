@@ -4,7 +4,11 @@ epeg_open() function
 <?php include 'skipif.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+var_dump(epeg_open(__DIR__ . '/fixture1.jpg'));
+var_dump(epeg_open('doesnotexist.jpg'));
 ?>
---EXPECT--
-OK
+--EXPECTF--
+resource(%d) of type (epeg)
+
+Warning: epeg_open(doesnotexist.jpg): failed to open stream: No such file or directory in %s on line %d
+NULL

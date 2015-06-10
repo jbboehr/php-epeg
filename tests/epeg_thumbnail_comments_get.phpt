@@ -4,7 +4,20 @@ epeg_thumbnail_comments_get() function
 <?php include 'skipif.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$epeg = epeg_open($file);
+var_dump(epeg_thumbnail_comments_get($epeg));
 ?>
 --EXPECT--
-OK
+array(5) {
+  ["uri"]=>
+  NULL
+  ["mtime"]=>
+  int(0)
+  ["width"]=>
+  int(0)
+  ["height"]=>
+  int(0)
+  ["mimetype"]=>
+  NULL
+}

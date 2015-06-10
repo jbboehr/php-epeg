@@ -4,7 +4,10 @@ epeg_decode_size_set() function
 <?php include 'skipif.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$epeg = epeg_open($file);
+epeg_decode_size_set($epeg, 80, 80, true);
+echo round(strlen(epeg_encode($epeg)) / 100);
 ?>
 --EXPECT--
-OK
+19

@@ -4,7 +4,10 @@ epeg_trim() function
 <?php include 'skipif.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$file = __DIR__ . '/fixture1.jpg';
+$epeg = epeg_open($file);
+epeg_decode_bounds_set($epeg, 0, 0, 50, 50);
+echo round(strlen(epeg_trim($epeg)) / 100), PHP_EOL;
 ?>
 --EXPECT--
-OK
+14

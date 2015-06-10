@@ -4,7 +4,10 @@ Epeg::enableThumbnailComments() method
 <?php include 'skipif_oo.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+$epeg = new Epeg(__DIR__ . '/fixture1.jpg');
+$epeg->enableThumbnailComments(true);
+var_dump($epeg);
+echo 'OK';
 ?>
 --EXPECT--
 OK

@@ -4,7 +4,16 @@ Epeg::__construct() method
 <?php include 'skipif_oo.inc'; ?>
 --FILE--
 <?php
-echo 'OK'; // no test case for this function yet
+// Try to open a file that does not exist
+try {
+	var_dump(new Epeg('doesnotexist.jpg'));
+} catch( EpegException $e ) {
+	echo $e->getMessage();
+}
+var_dump(new Epeg(__DIR__ . '/fixture1.jpg'));
 ?>
---EXPECT--
-OK
+--EXPECTF--
+object(Epeg)#%d (0) {
+}
+object(Epeg)#%f (0) {
+}

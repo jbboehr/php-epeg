@@ -1,0 +1,30 @@
+language: php
+
+before_install:
+  - travis_retry sudo apt-get update -qq
+  - travis_retry sudo apt-get install -qq autoconf automake libexif-dev libtool m4 make pkg-config
+  - travis_retry git clone https://github.com/jbboehr/epeg.git
+  - cd epeg
+  - ./autogen.sh
+  - ./configure
+  - make
+  - sudo make install
+  - sudo ldconfig
+  - cd ..
+
+php:
+  - 5.3
+  - 5.4
+  - 5.5
+  - 5.6
+#  - 7.0
+
+branches:
+  only:
+    - master
+
+script:
+  - phpize
+  - CPPFLAGS="-I/usr" ./configure
+  - make
+  - make test NO_INTERACTION=1

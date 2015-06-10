@@ -1,6 +1,3 @@
-dnl
-dnl $ Id: $
-dnl
 
 PHP_ARG_WITH(epeg, [whether to enable Epeg support],
 [  --with-epeg[[=PATH]]      Include Epeg support.
@@ -103,3 +100,4 @@ if test "$PHP_EPEG" != "no"; then
   PHP_NEW_EXTENSION(epeg, epeg.c , $ext_shared)
 
 fi
+

@@ -44,3 +44,4 @@ mkinstalldirs
 run-tests.php
 tmp-php.ini
 specs
+/*.jpg

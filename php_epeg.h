@@ -47,7 +47,7 @@
 #include <math.h>
 #include <Epeg.h>
 
-#define PHP_EPEG_MODULE_VERSION "0.3.0"
+#define PHP_EPEG_MODULE_VERSION "0.3.1"
 
 #define EO_FROM_FILE    (1 << 0)
 #define EO_FROM_BUFFER  (1 << 1)

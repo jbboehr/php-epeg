@@ -24,8 +24,8 @@ $action = $argc >= 2 ? $argv[1] : null;
 
 $file = __DIR__ . '/tests/fixture3.jpg';
 $count = 50;
-$w = 302;
-$h = 170;
+$w = 512;
+$h = 384;
 $quality = 75;
 
 switch( $action ) {
@@ -66,8 +66,9 @@ switch( $action ) {
             $imagick = new Imagick($file);
             $imagick_w = $imagick->getImageWidth();
             $imagick_h = $imagick->getImageHeight();
-            $imagick->resizeImage($w, $h, \Imagick::FILTER_LANCZOS, 1);
-            $imagick->setCompressionQuality($quality);
+            //$imagick->resizeImage($w, $h, \Imagick::FILTER_LANCZOS, 1);
+            $imagick->scaleImage($w, $h, 1);
+            $imagick->setImageCompressionQuality($quality);
             $imagick->stripImage();
             $imagick_buf = $imagick->getImageBlob();
         }

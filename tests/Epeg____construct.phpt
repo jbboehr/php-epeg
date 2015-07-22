@@ -8,15 +8,12 @@ Epeg::__construct() method
 try {
 	var_dump(new Epeg('doesnotexist.jpg'));
 } catch( EpegException $e ) {
-	echo $e, PHP_EOL;
+	echo $e->getMessage(), PHP_EOL;
 }
 // Try to open a file that does exist
 var_dump(new Epeg(__DIR__ . '/fixture1.jpg'));
 ?>
 --EXPECTF--
-exception 'EpegException' with message 'failed to open stream: doesnotexist.jpg' in %s
-Stack trace:
-#0 %s: Epeg->__construct('%s')
-#1 {main}
+failed to open stream: doesnotexist.jpg
 object(Epeg)#%f (0) {
 }

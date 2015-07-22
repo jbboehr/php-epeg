@@ -36,6 +36,7 @@
 
 #include <php.h>
 #include <php_ini.h>
+#include <php_version.h>
 #include <SAPI.h>
 #include <ext/standard/info.h>
 #include <Zend/zend_extensions.h>
@@ -71,10 +72,15 @@ typedef struct _php_epeg_t {
 	int quality;
 } php_epeg_t;
 
-#ifdef ZEND_ENGINE_2
+#if PHP_MAJOR_VERSION < 7
 typedef struct _php_epeg_object {
 	zend_object std;
 	php_epeg_t *ptr;
+} php_epeg_object;
+#else
+typedef struct _php_epeg_object {
+	php_epeg_t *ptr;
+	zend_object std;
 } php_epeg_object;
 #endif
 

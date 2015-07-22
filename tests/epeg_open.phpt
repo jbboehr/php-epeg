@@ -11,4 +11,4 @@ var_dump(epeg_open('doesnotexist.jpg'));
 resource(%d) of type (epeg)
 
 Warning: epeg_open(doesnotexist.jpg): failed to open stream: No such file or directory in %s on line %d
-NULL
+bool(false)

@@ -97,7 +97,7 @@ if test "$PHP_EPEG" != "no"; then
 
   PHP_ADD_LIBRARY(m, 1, EPEG_SHARED_LIBADD)
   PHP_SUBST(EPEG_SHARED_LIBADD)
-  PHP_NEW_EXTENSION(epeg, epeg.c , $ext_shared)
+  PHP_NEW_EXTENSION(epeg, php_epeg.c , $ext_shared)
 
 fi
 

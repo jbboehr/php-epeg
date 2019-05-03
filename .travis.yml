@@ -1,45 +1,53 @@
-language: php
-
-php:
-  - 5.3
-  - 5.4
-  - 5.5
-  - 5.6
-  - 7.0
-  - 7.1
-
-#branches:
-#  only:
-#    - master
-
-sudo: false
+matrix:
+  fast_finish: true
+  allow_failures:
+  - language: php
+    php: 'master'
+  - language: nix
+    env:
+    - NIX_CHANNEL=unstable
+    - NIX_PHP_ATTR=php
+  include:
+  - language: php
+    php: '7.1'
+  - language: php
+    php: '7.2'
+  - language: php
+    php: '7.3'
+  - language: php
+    php: 'master'
+  - language: nix
+    env:
+    - NIX_CHANNEL=18.09
+    - NIX_PHP_ATTR=php71
+  - language: nix
+    env:
+    - NIX_CHANNEL=19.03
+    - NIX_PHP_ATTR=php72
+  - language: nix
+    env:
+    - NIX_CHANNEL=19.03
+    - NIX_PHP_ATTR=php73
+  - language: nix
+    env:
+    - NIX_CHANNEL=unstable
+    - NIX_PHP_ATTR=php
 
 addons:
   apt:
     packages:
-      - libexif-dev
-      - pkg-config
+      - lcov
+
+branches:
+  only:
+    - master
+    - travis
 
 before_install:
-  - travis_retry git clone https://github.com/jbboehr/epeg.git
-  - cd epeg
-  - ./autogen.sh
-  - ./configure --prefix=$HOME/epeg
-  - make
-  - make install
-  - cd ..
-
-install:
-  - export CFLAGS="-L$HOME/epeg/lib"
-  - export CPPFLAGS="-I$HOME/epeg/include"
-  - export PKG_CONFIG_PATH="$HOME/epeg/lib/pkgconfig"
-  - phpize
-  - ./configure --enable-epeg
-  - make
-
-script:
-  - export NO_INTERACTION=1
-  - export REPORT_EXIT_STATUS=1
-  - export TEST_PHP_EXECUTABLE=`which php`
-  - php run-tests.php -d extension=epeg.so -d extension_dir=modules -n ./tests/*.phpt
-  - for i in `ls tests/*.out 2>/dev/null`; do echo "-- START ${i}"; cat $i; echo "-- END"; done
+  - source ./.ci/travis_env.sh
+  - before_install
+install: install
+before_script: before_script
+script: script
+after_success: after_success
+after_failure: after_failure

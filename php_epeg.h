@@ -72,24 +72,16 @@ typedef struct _php_epeg_t {
 	int quality;
 } php_epeg_t;
 
-#if PHP_MAJOR_VERSION < 7
-typedef struct _php_epeg_object {
-	zend_object std;
-	php_epeg_t *ptr;
-} php_epeg_object;
-#else
 typedef struct _php_epeg_object {
 	php_epeg_t *ptr;
 	zend_object std;
 } php_epeg_object;
-#endif
 
 /* }}} */
 
 END_EXTERN_C()
 
 #endif /* _PHP_EPEG_H_ */
-
 
 /*
  * Local variables:

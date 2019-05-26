@@ -34,21 +34,6 @@
 /* @todo why is this necessary? */
 #define PHP_EPEG_ENABLE_DECODE_BOUNDS_SET
 
-#if PHP_MAJOR_VERSION < 7
-#define _ZVAL_STRINGL(a, b, c) ZVAL_STRINGL(a, b, c, 1)
-#define _RETURN_STRING(a) RETURN_STRING(a, 1)
-#define _add_assoc_string(...) add_assoc_string(__VA_ARGS__, 1)
-#define _zend_register_internal_class_ex(class, parent) zend_register_internal_class_ex(class, parent, NULL TSRMLS_CC)
-typedef int strsize_t;
-#else
-#define ENFORCE_SAFE_MODE 0
-#define _ZVAL_STRINGL ZVAL_STRINGL
-#define _RETURN_STRING(a) RETURN_STRING(a)
-#define _add_assoc_string add_assoc_string
-#define _zend_register_internal_class_ex zend_register_internal_class_ex
-typedef size_t strsize_t;
-#endif
-
 static int le_epeg;
 static zend_class_entry *ce_Epeg = NULL;
 static zend_object_handlers _php_epeg_object_handlers;
@@ -98,40 +83,40 @@ round_to_i(double num)
 }
 
 static php_epeg_t *
-php_epeg_file_open(char *file, int exceptions TSRMLS_DC);
+php_epeg_file_open(char *file, int exceptions);
 
 static php_epeg_t *
-php_epeg_memory_open(char *data, strsize_t data_len, int exceptions TSRMLS_DC);
+php_epeg_memory_open(char *data, size_t data_len, int exceptions);
 
 static void
 php_epeg_open_wrapper(INTERNAL_FUNCTION_PARAMETERS, int mode);
 
 static void
-php_epeg_set_retval(unsigned char *buf, strsize_t buf_len,
-		char *file, strsize_t file_len, zval *retval TSRMLS_DC);
+php_epeg_set_retval(unsigned char *buf, size_t buf_len,
+		char *file, size_t file_len, zval *retval);
 
 static void
-php_epeg_encode_error(int errcode TSRMLS_DC);
+php_epeg_encode_error(int errcode);
 
 static void
-php_epeg_trim_error(int errcode TSRMLS_DC);
+php_epeg_trim_error(int errcode);
 
 #if PHP_MAJOR_VERSION < 7
 static php_epeg_object *
-php_epeg_object_fetch_object(zval * zv TSRMLS_DC);
+php_epeg_object_fetch_object(zval * zv);
 #else
 static php_epeg_object *
-php_epeg_fetch_object(zend_object * obj TSRMLS_DC);
+php_epeg_fetch_object(zend_object * obj);
 static php_epeg_object *
-php_epeg_object_fetch_object(zval * zv TSRMLS_DC);
+php_epeg_object_fetch_object(zval * zv);
 #endif
 
 #if PHP_MAJOR_VERSION < 7
 static void
-php_epeg_free_resource(zend_rsrc_list_entry *rsrc TSRMLS_DC);
+php_epeg_free_resource(zend_rsrc_list_entry *rsrc);
 #else
 static void
-php_epeg_free_resource(zend_resource *rsrc TSRMLS_DC);
+php_epeg_free_resource(zend_resource *rsrc);
 #endif
 
 static void
@@ -139,18 +124,18 @@ php_epeg_free(php_epeg_t *im);
 
 #if PHP_MAJOR_VERSION < 7
 static zend_object_value
-php_epeg_object_new(zend_class_entry *ce TSRMLS_DC);
+php_epeg_object_new(zend_class_entry *ce);
 #else
 static zend_object *
-php_epeg_object_new(zend_class_entry *ce TSRMLS_DC);
+php_epeg_object_new(zend_class_entry *ce);
 #endif
 
 #if PHP_MAJOR_VERSION < 7
 static void
-php_epeg_free_object_storage(void *object TSRMLS_DC);
+php_epeg_free_object_storage(void *object);
 #else
 static void
-php_epeg_free_object_storage(zend_object *object TSRMLS_DC);
+php_epeg_free_object_storage(zend_object *object);
 #endif
 
 static int
@@ -170,10 +155,10 @@ php_epeg_reset(php_epeg_t *im);
 
 /* fetch (php_epeg_t *) from resource */
 static inline php_epeg_t *
-php_epeg_fetch_image_from_resource(zval * zim TSRMLS_DC)
+php_epeg_fetch_image_from_resource(zval * zim)
 {
 #if PHP_MAJOR_VERSION < 7
-	return (php_epeg_t *) zend_fetch_resource(&zim TSRMLS_CC, -1, "epeg", NULL, 1, le_epeg);
+	return (php_epeg_t *) zend_fetch_resource(&zim, -1, "epeg", NULL, 1, le_epeg);
 #else
 	return (php_epeg_t *) zend_fetch_resource(Z_RES_P(zim), "epeg", le_epeg);
 #endif
@@ -181,7 +166,7 @@ php_epeg_fetch_image_from_resource(zval * zim TSRMLS_DC)
 
 /* free any type of resource */
 static inline void
-FREE_RESOURCE(zval * resource TSRMLS_DC)
+FREE_RESOURCE(zval * resource)
 {
 #if PHP_MAJOR_VERSION < 7
 	zend_list_delete(Z_RESVAL_P(resource));
@@ -192,10 +177,10 @@ FREE_RESOURCE(zval * resource TSRMLS_DC)
 
 /* fetch (php_epeg_t *) from object storage */
 static inline php_epeg_t *
-php_epeg_fetch_image_from_object(zval * obj TSRMLS_DC)
+php_epeg_fetch_image_from_object(zval * obj)
 {
 	php_epeg_object *intern;
-	intern = php_epeg_object_fetch_object((obj) TSRMLS_CC);
+	intern = php_epeg_object_fetch_object((obj));
 	return intern->ptr;
 }
 
@@ -205,55 +190,45 @@ php_epeg_fetch_image_from_object(zval * obj TSRMLS_DC)
 		if (ZEND_NUM_ARGS() != 0) { \
 			WRONG_PARAM_COUNT; \
 		} \
-		im = php_epeg_fetch_image_from_object(obj TSRMLS_CC); \
+		im = php_epeg_fetch_image_from_object(obj); \
 	} else { \
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zim) == FAILURE) { \
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zim) == FAILURE) { \
 			return; \
 		} \
-		im = php_epeg_fetch_image_from_resource(zim TSRMLS_CC); \
+		im = php_epeg_fetch_image_from_resource(zim); \
 	}
 
 /* expect many parameters */
 #define PHP_EPEG_PARSE_PARAMETERS(fmt, ...) \
 	if (obj) { \
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, fmt, __VA_ARGS__) == FAILURE) { \
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), fmt, __VA_ARGS__) == FAILURE) { \
 			return; \
 		} \
-		im = php_epeg_fetch_image_from_object(obj TSRMLS_CC); \
+		im = php_epeg_fetch_image_from_object(obj); \
 	} else { \
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r" fmt, &zim, __VA_ARGS__) == FAILURE) { \
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r" fmt, &zim, __VA_ARGS__) == FAILURE) { \
 			return; \
 		} \
-		im = php_epeg_fetch_image_from_resource(zim TSRMLS_CC); \
+		im = php_epeg_fetch_image_from_resource(zim); \
 	}
 
 /* }}} */
 
 /* {{{ argument informations */
 
-#if PHP_VERSION_ID < 50300
-#define ARG_INFO_STATIC static
-#else
-#define ARG_INFO_STATIC
-#endif
-
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg__epeg, 0)
 	ZEND_ARG_INFO(0, image)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg__output, 0)
 	ZEND_ARG_INFO(0, image)
 	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg__output_m, 0)
 	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO_EX(arginfo_epeg_thumbnail_create, 0, 0, 4)
 	ZEND_ARG_INFO(0, in_file)
 	ZEND_ARG_INFO(0, out_file)
@@ -262,37 +237,31 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_epeg_thumbnail_create, 0, 0, 4)
 	ZEND_ARG_INFO(0, quality)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO_EX(arginfo_epeg_open, 0, 0, 1)
 	ZEND_ARG_INFO(0, filename)
 	ZEND_ARG_INFO(0, is_data)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_file_open, 0)
 	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_memory_open, 0)
 	ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_size_set, 0)
 	ZEND_ARG_INFO(0, image)
 	ZEND_ARG_INFO(0, width)
 	ZEND_ARG_INFO(0, height)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_size_set_m, 0)
 	ZEND_ARG_INFO(0, width)
 	ZEND_ARG_INFO(0, height)
 ZEND_END_ARG_INFO()
 
 #ifdef PHP_EPEG_ENABLE_DECODE_BOUNDS_SET
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_bounds_set, 0)
 	ZEND_ARG_INFO(0, image)
 	ZEND_ARG_INFO(0, x)
@@ -301,7 +270,6 @@ ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_bounds_set, 0)
 	ZEND_ARG_INFO(0, height)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_bounds_set_m, 0)
 	ZEND_ARG_INFO(0, x)
 	ZEND_ARG_INFO(0, y)
@@ -310,46 +278,38 @@ ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_bounds_set_m, 0)
 ZEND_END_ARG_INFO()
 #endif
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_colorspace_set, 0)
 	ZEND_ARG_INFO(0, image)
 	ZEND_ARG_INFO(0, colorspace)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_decode_colorspace_set_m, 0)
 	ZEND_ARG_INFO(0, colorspace)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_comment_set, 0)
 	ZEND_ARG_INFO(0, image)
 	ZEND_ARG_INFO(0, comment)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_comment_set_m, 0)
 	ZEND_ARG_INFO(0, comment)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_quality_set, 0)
 	ZEND_ARG_INFO(0, image)
 	ZEND_ARG_INFO(0, quality)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO(arginfo_epeg_quality_set_m, 0)
 	ZEND_ARG_INFO(0, quality)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO_EX(arginfo_epeg_thumbnail_comments_enable, 0, 0, 1)
 	ZEND_ARG_INFO(0, image)
 	ZEND_ARG_INFO(0, onoff)
 ZEND_END_ARG_INFO()
 
-ARG_INFO_STATIC
 ZEND_BEGIN_ARG_INFO_EX(arginfo_epeg_thumbnail_comments_enable_m, 0, 0, 0)
 	ZEND_ARG_INFO(0, onoff)
 ZEND_END_ARG_INFO()
@@ -429,7 +389,7 @@ ZEND_GET_MODULE(epeg)
 	REGISTER_LONG_CONSTANT(#name, (long)name, CONST_PERSISTENT | CONST_CS)
 
 #define PHP_EPEG_REGISTER_CLASS_CONSTANT(name) \
-		zend_declare_class_constant_long(ce_Epeg, #name, strlen(#name), (long)EPEG_##name TSRMLS_CC)
+		zend_declare_class_constant_long(ce_Epeg, #name, strlen(#name), (long)EPEG_##name)
 
 /* {{{ PHP_MINIT_FUNCTION */
 static PHP_MINIT_FUNCTION(epeg)
@@ -450,16 +410,14 @@ static PHP_MINIT_FUNCTION(epeg)
 
 	INIT_CLASS_ENTRY(ce, "Epeg", epeg_methods);
 	ce.create_object = php_epeg_object_new;
-	ce_Epeg = zend_register_internal_class(&ce TSRMLS_CC);
+	ce_Epeg = zend_register_internal_class(&ce);
 	if (!ce_Epeg) {
 		return FAILURE;
 	}
 
 	memcpy(&_php_epeg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-#if PHP_MAJOR_VERSION >= 7
 	_php_epeg_object_handlers.offset = XtOffsetOf(php_epeg_object, std);
 	_php_epeg_object_handlers.free_obj = php_epeg_free_object_storage;
-#endif
 	_php_epeg_object_handlers.clone_obj = NULL;
 
 	PHP_EPEG_REGISTER_CLASS_CONSTANT(GRAY8);
@@ -473,7 +431,7 @@ static PHP_MINIT_FUNCTION(epeg)
 
 	// Handlebars\Exception
 	INIT_CLASS_ENTRY(ce, "EpegException", NULL);
-	EpegException_ce_ptr = _zend_register_internal_class_ex(&ce, exception_ce);
+	EpegException_ce_ptr = zend_register_internal_class_ex(&ce, exception_ce);
 
 	return SUCCESS;
 }
@@ -496,13 +454,13 @@ PHP_MINFO_FUNCTION(epeg)
 
 /* {{{ php_epeg_file_open */
 static php_epeg_t *
-php_epeg_file_open(char *file, int exceptions TSRMLS_DC)
+php_epeg_file_open(char *file, int exceptions)
 {
 	php_stream *sth = NULL;
 	char *data = NULL;
 	int data_len = 0;
 	php_epeg_t *im = NULL;
-	int flags = ENFORCE_SAFE_MODE | IGNORE_PATH;
+	int flags = IGNORE_PATH;
 
 	if( exceptions ) {
 		flags = flags & ~REPORT_ERRORS;
@@ -514,35 +472,30 @@ php_epeg_file_open(char *file, int exceptions TSRMLS_DC)
 	sth = php_stream_open_wrapper(file, "rb", flags, NULL);
 	if (!sth) {
 		if( exceptions ) {
-			zend_throw_exception_ex(EpegException_ce_ptr, 0 TSRMLS_CC, "failed to open stream: %s", file);
+			zend_throw_exception_ex(EpegException_ce_ptr, 0, "failed to open stream: %s", file);
 		}
 		return NULL;
 	}
 
 	/* copy image data to the buffer */
-#if PHP_MAJOR_VERSION < 7
-	data_len = php_stream_copy_to_mem(sth, &data, PHP_STREAM_COPY_ALL, 0);
-#else
-	// @todo fixme
 	zend_string * zstrdata = php_stream_copy_to_mem(sth, PHP_STREAM_COPY_ALL, 0);
 	data = estrndup(zstrdata->val, zstrdata->len);
 	data_len = zstrdata->len;
 	zend_string_release(zstrdata);
-#endif
 
 	/* close the input stream */
 	php_stream_close(sth);
 	if (data_len == 0) {
 		if( exceptions ) {
-			zend_throw_exception(EpegException_ce_ptr, "Cannot read image data", 0 TSRMLS_CC);
+			zend_throw_exception(EpegException_ce_ptr, "Cannot read image data", 0);
 		} else {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot read image data");
+			php_error_docref(NULL, E_WARNING, "Cannot read image data");
 		}
 		return NULL;
 	}
 
 	/* open the JPEG image stored in the buffer */
-	im = php_epeg_memory_open(data, data_len, 0 TSRMLS_CC);
+	im = php_epeg_memory_open(data, data_len, 0);
 
 	/* free the buffer */
 	efree(data);
@@ -554,7 +507,7 @@ php_epeg_file_open(char *file, int exceptions TSRMLS_DC)
 
 /* {{{ php_epeg_memory_open */
 static php_epeg_t *
-php_epeg_memory_open(char *data, strsize_t data_len, int exceptions TSRMLS_DC)
+php_epeg_memory_open(char *data, size_t data_len, int exceptions)
 {
 	php_epeg_t *im = NULL;
 
@@ -569,9 +522,9 @@ php_epeg_memory_open(char *data, strsize_t data_len, int exceptions TSRMLS_DC)
 	if (im->ptr == NULL) {
 		php_epeg_free(im);
 		if( exceptions ) {
-			zend_throw_exception(EpegException_ce_ptr, "Not a valid JPEG data", 0 TSRMLS_CC);
+			zend_throw_exception(EpegException_ce_ptr, "Not a valid JPEG data", 0);
 		} else {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Not a valid JPEG data");
+			php_error_docref(NULL, E_WARNING, "Not a valid JPEG data");
 		}
 		return NULL;
 	}
@@ -590,22 +543,22 @@ php_epeg_open_wrapper(INTERNAL_FUNCTION_PARAMETERS, int mode)
 {
 	/* declaration of the arguments */
 	char *str = NULL;
-	strsize_t str_len = 0;
+	size_t str_len = 0;
 
 	/* declaration of the local variables */
 	php_epeg_t *im = NULL;
 
 	/* parse the arguments and open the JPEG image */
 	if (mode & EO_FROM_BUFFER) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &str, &str_len) == FAILURE) {
 			RETURN_FALSE;
 		}
-		im = php_epeg_memory_open(str, str_len, 0 TSRMLS_CC);
+		im = php_epeg_memory_open(str, str_len, 0);
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &str, &str_len) == FAILURE) {
 			RETURN_FALSE;
 		}
-		im = php_epeg_file_open(str, 0 TSRMLS_CC);
+		im = php_epeg_file_open(str, 0);
 	}
 	if (im == NULL) {
 		RETURN_FALSE;
@@ -615,39 +568,34 @@ php_epeg_open_wrapper(INTERNAL_FUNCTION_PARAMETERS, int mode)
 		php_epeg_object *intern;
 		//Z_TYPE_P(return_value) = IS_OBJECT;
 		object_init_ex(return_value, ce_Epeg);
-		intern = php_epeg_object_fetch_object(return_value TSRMLS_CC);
+		intern = php_epeg_object_fetch_object(return_value);
 		intern->ptr = im;
 	} else {
-#if PHP_MAJOR_VERSION < 7
-		ZEND_REGISTER_RESOURCE(return_value, im, le_epeg);
-#else
 		RETURN_RES(zend_register_resource(im, le_epeg));
-#endif
 	}
 }
 /* }}} */
 
 /* {{{ php_epeg_set_retval */
 static void
-php_epeg_set_retval(unsigned char *buf, strsize_t buf_len,
-		char *file, strsize_t file_len, zval *retval TSRMLS_DC)
+php_epeg_set_retval(unsigned char *buf, size_t buf_len,
+		char *file, size_t file_len, zval *retval)
 {
 	/* if the output is an empty string, the content of the thubmnail is returned */
 	if (file_len == 0) {
 		/* set return value to the content of the thumbnail */
-		_ZVAL_STRINGL(retval, (char *)buf, buf_len);
+		ZVAL_STRINGL(retval, (char *)buf, buf_len);
 	} else {
 		/* open stream for writing */
 		php_stream *sth = NULL;
-		sth = php_stream_open_wrapper(file, "wb",
-				ENFORCE_SAFE_MODE | IGNORE_PATH | REPORT_ERRORS, NULL);
+		sth = php_stream_open_wrapper(file, "wb", IGNORE_PATH | REPORT_ERRORS, NULL);
 		if (!sth) {
 			/* set return value to false */
 			ZVAL_FALSE(retval);
 		} else {
 			int expected_written_len = buf_len;
 			if (expected_written_len != php_stream_write(sth, (char *)buf, buf_len)) {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to write image data to stream");
+				php_error_docref(NULL, E_WARNING, "Failed to write image data to stream");
 				/* set return value to false */
 				ZVAL_FALSE(retval);
 			} else {
@@ -663,75 +611,59 @@ php_epeg_set_retval(unsigned char *buf, strsize_t buf_len,
 
 /* {{{ php_epeg_encode_error */
 static void
-php_epeg_encode_error(int errcode TSRMLS_DC)
+php_epeg_encode_error(int errcode)
 {
 	switch (errcode) {
 	  case 3:
 	  case 4:
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to decode image");
+		php_error_docref(NULL, E_WARNING, "Failed to decode image");
 		break;
 	  case 1:
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to scale image");
+		php_error_docref(NULL, E_WARNING, "Failed to scale image");
 		break;
 	  case 2:
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to encode image");
+		php_error_docref(NULL, E_WARNING, "Failed to encode image");
 		break;
 	  default:
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unknown error");
+		php_error_docref(NULL, E_WARNING, "Unknown error");
 	}
 }
 /* }}} */
 
 /* {{{ php_epeg_trim_error */
 static void
-php_epeg_trim_error(int errcode TSRMLS_DC)
+php_epeg_trim_error(int errcode)
 {
 	switch (errcode) {
 	  case 1:
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to trim image");
+		php_error_docref(NULL, E_WARNING, "Failed to trim image");
 		break;
 	  default:
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unknown error");
+		php_error_docref(NULL, E_WARNING, "Unknown error");
 	}
 }
 /* }}} */
 
 /* {{{ php_epeg_object_fetch_object */
-#if PHP_MAJOR_VERSION < 7
 static php_epeg_object *
-php_epeg_object_fetch_object(zval * zv TSRMLS_DC)
-{
-  return (php_epeg_object *) zend_object_store_get_object(zv TSRMLS_CC);
-}
-#else
-static php_epeg_object *
-php_epeg_fetch_object(zend_object * obj TSRMLS_DC)
+php_epeg_fetch_object(zend_object * obj)
 {
   return (php_epeg_object *)((char*)(obj) - XtOffsetOf(php_epeg_object, std));
 }
 
 static php_epeg_object *
-php_epeg_object_fetch_object(zval * zv TSRMLS_DC)
+php_epeg_object_fetch_object(zval * zv)
 {
-  return php_epeg_fetch_object(Z_OBJ_P(zv) TSRMLS_CC);
+  return php_epeg_fetch_object(Z_OBJ_P(zv));
 }
-#endif
 /* }}} */
 
 /* {{{ php_epeg_free_resource */
-#if PHP_MAJOR_VERSION < 7
 static void
-php_epeg_free_resource(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+php_epeg_free_resource(zend_resource *rsrc)
 {
 	php_epeg_free((php_epeg_t *)(rsrc->ptr));
 }
-#else
-static void
-php_epeg_free_resource(zend_resource *rsrc TSRMLS_DC)
-{
-	php_epeg_free((php_epeg_t *)(rsrc->ptr));
-}
-#endif
 /* }}} */
 
 /* {{{ php_epeg_free */
@@ -749,69 +681,29 @@ php_epeg_free(php_epeg_t *im)
 /* }}} */
 
 /* {{{ php_epeg_object_new */
-#if PHP_MAJOR_VERSION < 7
-static zend_object_value
-php_epeg_object_new(zend_class_entry *ce TSRMLS_DC)
-{
-	zend_object_value retval;
-	php_epeg_object *intern;
-
-	intern = (php_epeg_object *)ecalloc(1, sizeof(php_epeg_object));
-
-	zend_object_std_init(&intern->std, ce TSRMLS_CC);
-#if PHP_API_VERSION < 20100412
-	zend_hash_copy(intern->std.properties, &ce->default_properties,
-			(copy_ctor_func_t)zval_add_ref, NULL, sizeof(zval *));
-#else
-	object_properties_init(&intern->std, ce);
-#endif
-
-	retval.handle = zend_objects_store_put(intern,
-			(zend_objects_store_dtor_t)zend_objects_destroy_object,
-			(zend_objects_free_object_storage_t)php_epeg_free_object_storage,
-			NULL TSRMLS_CC);
-	retval.handlers = &_php_epeg_object_handlers;
-
-	return retval;
-}
-#else
 static zend_object *
-php_epeg_object_new(zend_class_entry *ce TSRMLS_DC)
+php_epeg_object_new(zend_class_entry *ce)
 {
 	php_epeg_object *intern;
   
 	intern = (php_epeg_object *) ecalloc(1, sizeof(php_epeg_object) + zend_object_properties_size(ce));
-	zend_object_std_init(&intern->std, ce TSRMLS_CC);
+	zend_object_std_init(&intern->std, ce);
 	intern->std.handlers = &_php_epeg_object_handlers;
 
 	return &intern->std;
 }
-#endif
 /* }}} */
 
 /* {{{ php_epeg_free_object_storage */
-#if PHP_MAJOR_VERSION < 7
 static void
-php_epeg_free_object_storage(void *object TSRMLS_DC)
-{
-	php_epeg_object *intern = (php_epeg_object *)object;
-	if( intern->ptr ) {
-		php_epeg_free(intern->ptr);
-	}
-	zend_object_std_dtor(&intern->std TSRMLS_CC);
-	efree(object);
-}
-#else
-static void
-php_epeg_free_object_storage(zend_object *object TSRMLS_DC)
+php_epeg_free_object_storage(zend_object *object)
 {
 	php_epeg_object *intern = php_epeg_fetch_object(object);
 	if( intern->ptr ) {
 		php_epeg_free(intern->ptr);
 	}
-	zend_object_std_dtor(&intern->std TSRMLS_CC);
+	zend_object_std_dtor(&intern->std);
 }
-#endif
 /* }}} */
 
 /* {{{ php_epeg_calc_thumb_size */
@@ -902,9 +794,9 @@ static PHP_FUNCTION(epeg_thumbnail_create)
 {
 	/* declaration of the arguments */
 	char *in_file = NULL;
-	strsize_t in_file_len = 0;
+	size_t in_file_len = 0;
 	char *out_file = NULL;
-	strsize_t out_file_len = 0;
+	size_t out_file_len = 0;
 	long max_width = 0;
 	long max_height = 0;
 	long quality = 75;
@@ -919,7 +811,7 @@ static PHP_FUNCTION(epeg_thumbnail_create)
 	zend_bool out_buf_free_zend = 0; /* use efree() */
 
 	/* parse the arguments */
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssll|l",
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "ssll|l",
 			&in_file, &in_file_len, &out_file, &out_file_len,
 			&max_width, &max_height, &quality) == FAILURE)
 	{
@@ -928,44 +820,38 @@ static PHP_FUNCTION(epeg_thumbnail_create)
 
 	/* check output size */
 	if (max_width <= 0 || max_height <= 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,
+		php_error_docref(NULL, E_WARNING,
 				"Invalid image dimensions '%ldx%ld'", max_width, max_height);
 		RETURN_FALSE;
 	}
 
 	/* check quality */
 	if (quality < 0 || quality > 100) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid quality '%ld'", quality);
+		php_error_docref(NULL, E_WARNING, "Invalid quality '%ld'", quality);
 		RETURN_FALSE;
 	}
 
 	/* open stream for reading */
-	sth = php_stream_open_wrapper(in_file, "rb",
-			ENFORCE_SAFE_MODE | IGNORE_PATH | REPORT_ERRORS, NULL);
+	sth = php_stream_open_wrapper(in_file, "rb", IGNORE_PATH | REPORT_ERRORS, NULL);
 	if (!sth) {
 		RETURN_FALSE;
 	}
 
 	/* copy image data to the buffer */
-#if PHP_MAJOR_VERSION < 7
-	in_buf_len = php_stream_copy_to_mem(sth, &in_buf, PHP_STREAM_COPY_ALL, 0);
-#else
-	// @todo fixme
 	zend_string * zstrdata = php_stream_copy_to_mem(sth, PHP_STREAM_COPY_ALL, 0);
 	in_buf = estrndup(zstrdata->val, zstrdata->len);
 	in_buf_len = zstrdata->len;
 	zend_string_release(zstrdata);
-#endif
 
 	/* close the input stream */
 	php_stream_close(sth);
 	if (in_buf_len == 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot read image data");
+		php_error_docref(NULL, E_WARNING, "Cannot read image data");
 		RETURN_FALSE;
 	}
 
 	/* open the JPEG image stored in the buffer */
-	im = php_epeg_memory_open(in_buf, in_buf_len, 0 TSRMLS_CC);
+	im = php_epeg_memory_open(in_buf, in_buf_len, 0);
 	if (im == NULL) {
 		/* free the input buffer */
 		efree(in_buf);
@@ -997,7 +883,7 @@ static PHP_FUNCTION(epeg_thumbnail_create)
 				free(tmp_buf);
 			}
 			/* raise error by the result */
-			php_epeg_encode_error(result TSRMLS_CC);
+			php_epeg_encode_error(result);
 			RETURN_FALSE;
 		}
 
@@ -1017,7 +903,7 @@ static PHP_FUNCTION(epeg_thumbnail_create)
 
 		/* check for SOI (Start Of Image Segment) marker */
 		if (*in_ptr != 0xFF && *(in_ptr + 1) != 0xD8) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Not a valid JPEG data");
+			php_error_docref(NULL, E_WARNING, "Not a valid JPEG data");
 			efree(in_buf);
 			RETURN_FALSE;
 		}
@@ -1046,7 +932,7 @@ static PHP_FUNCTION(epeg_thumbnail_create)
 				field_len = (((size_t)*in_ptr) << 8) | (size_t)*(in_ptr + 1);
 
 				if (in_ptr + field_len > in_end) {
-					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid data structure");
+					php_error_docref(NULL, E_WARNING, "Invalid data structure");
 					efree(out_buf);
 					RETURN_FALSE;
 				}
@@ -1092,7 +978,7 @@ static PHP_FUNCTION(epeg_thumbnail_create)
 	}
 
 	/* set return value */
-	php_epeg_set_retval(out_buf, out_buf_len, out_file, out_file_len, return_value TSRMLS_CC);
+	php_epeg_set_retval(out_buf, out_buf_len, out_file, out_file_len, return_value);
 
 	/* free the output buffer */
 	if (out_buf_free_stdc) {
@@ -1123,20 +1009,20 @@ static PHP_FUNCTION(epeg_open)
 
 	/* declaration of the arguments */
 	char *file = NULL;
-	strsize_t file_len = 0;
+	size_t file_len = 0;
 	zend_bool is_data = 0;
 
 	/* parse arguments */
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &file, &file_len, &is_data) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|b", &file, &file_len, &is_data) == FAILURE) {
 		RETURN_FALSE;
 	}
 
 	if (is_data) {
 		/* open the JPEG image stored in the buffer */
-		im = php_epeg_memory_open(file, file_len, (obj != NULL) TSRMLS_CC);
+		im = php_epeg_memory_open(file, file_len, (obj != NULL));
 	} else {
 		/* open Epeg image handle */
-		im = php_epeg_file_open(file, (obj != NULL) TSRMLS_CC);
+		im = php_epeg_file_open(file, (obj != NULL));
 	}
 	if (im == NULL) {
 		if (obj) {
@@ -1149,20 +1035,16 @@ static PHP_FUNCTION(epeg_open)
 
 	if (obj) {
 		php_epeg_object *intern;
-		intern = php_epeg_object_fetch_object(obj TSRMLS_CC);
+		intern = php_epeg_object_fetch_object(obj);
 		if (intern->ptr != NULL) {
 			php_epeg_free(im);
 			zend_throw_exception(zend_exception_get_default(TSRMLS_C),
-					"Epeg already initialized", 0 TSRMLS_CC);
+					"Epeg already initialized", 0);
 			return;
 		}
 		intern->ptr = im;
 	} else {
-#if PHP_MAJOR_VERSION < 7
-		ZEND_REGISTER_RESOURCE(return_value, im, le_epeg);
-#else
 		RETURN_RES(zend_register_resource(im, le_epeg));
-#endif
 	}
 }
 /* }}} epeg_open */
@@ -1301,7 +1183,7 @@ static PHP_FUNCTION(epeg_decode_size_set)
 
 	/* check decode size */
 	if (w <= 0 || h <= 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid image dimensions");
+		php_error_docref(NULL, E_WARNING, "Invalid image dimensions");
 		return;
 	}
 
@@ -1354,7 +1236,7 @@ static PHP_FUNCTION(epeg_decode_bounds_set)
 
 	/* check decode bounds */
 	if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > (long)im->width || y + h > (long)im->height) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid image dimensions");
+		php_error_docref(NULL, E_WARNING, "Invalid image dimensions");
 		return;
 	}
 
@@ -1399,7 +1281,7 @@ static PHP_FUNCTION(epeg_decode_colorspace_set)
 
 	/* check colorspace */
 	if (colorspace < (long)EPEG_GRAY8 || colorspace > (long)EPEG_CMYK) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid colorspace");
+		php_error_docref(NULL, E_WARNING, "Invalid colorspace");
 	} else {
 		epeg_decode_colorspace_set(im->ptr, (Epeg_Colorspace)colorspace);
 	}
@@ -1434,7 +1316,7 @@ static PHP_FUNCTION(epeg_comment_get)
 	if (comment == NULL) {
 		RETURN_EMPTY_STRING();
 	} else {
-		_RETURN_STRING((char *)comment);
+		RETURN_STRING((char *)comment);
 	}
 }
 /* }}} epeg_comment_get */
@@ -1459,7 +1341,7 @@ static PHP_FUNCTION(epeg_comment_set)
 
 	/* declaration of the arguments */
 	const char *comment = NULL;
-	strsize_t comment_len = 0;
+	size_t comment_len = 0;
 
 	/* parse the arguments */
 	PHP_EPEG_PARSE_PARAMETERS("s", &comment, &comment_len);
@@ -1498,7 +1380,7 @@ static PHP_FUNCTION(epeg_quality_set)
 
 	/* check quality */
 	if (quality < 0 || quality > 100L) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid quality (%ld)", quality);
+		php_error_docref(NULL, E_WARNING, "Invalid quality (%ld)", quality);
 		return;
 	}
 
@@ -1541,7 +1423,7 @@ static PHP_FUNCTION(epeg_thumbnail_comments_get)
 	if (info.uri == NULL) {
 		add_assoc_null(return_value, "uri");
 	} else {
-		_add_assoc_string(return_value, "uri", (char *)info.uri);
+		add_assoc_string(return_value, "uri", (char *)info.uri);
 	}
 	add_assoc_long(return_value, "mtime", (long)info.mtime);
 	add_assoc_long(return_value, "width", (long)info.w);
@@ -1549,7 +1431,7 @@ static PHP_FUNCTION(epeg_thumbnail_comments_get)
 	if (info.mimetype == NULL) {
 		add_assoc_null(return_value, "mimetype");
 	} else {
-		_add_assoc_string(return_value, "mimetype", (char *)info.mimetype);
+		add_assoc_string(return_value, "mimetype", (char *)info.mimetype);
 	}
 }
 /* }}} epeg_thumbnail_comments_get */
@@ -1607,7 +1489,7 @@ static PHP_FUNCTION(epeg_encode)
 
 	/* declaration of the arguments */
 	char *file = NULL;
-	strsize_t file_len = 0;
+	size_t file_len = 0;
 
 	/* declaration of the local variables */
 	unsigned char *buf = NULL;
@@ -1627,12 +1509,12 @@ static PHP_FUNCTION(epeg_encode)
 			free(buf);
 		}
 		/* raise error by the result */
-		php_epeg_encode_error(result TSRMLS_CC);
+		php_epeg_encode_error(result);
 		RETURN_FALSE;
 	}
 
 	/* set return value */
-	php_epeg_set_retval(buf, buf_len, file, file_len, return_value TSRMLS_CC);
+	php_epeg_set_retval(buf, buf_len, file, file_len, return_value);
 
 	/* free the buffer */
 	free(buf);
@@ -1665,7 +1547,7 @@ static PHP_FUNCTION(epeg_trim)
 
 	/* declaration of the arguments */
 	char *file = NULL;
-	strsize_t file_len = 0;
+	size_t file_len = 0;
 
 	/* declaration of the local variables */
 	unsigned char *buf = NULL;
@@ -1685,12 +1567,12 @@ static PHP_FUNCTION(epeg_trim)
 			free(buf);
 		}
 		/* raise error by the result */
-		php_epeg_trim_error(result TSRMLS_CC);
+		php_epeg_trim_error(result);
 		RETURN_FALSE;
 	}
 
 	/* set return value */
-	php_epeg_set_retval(buf, buf_len, file, file_len, return_value TSRMLS_CC);
+	php_epeg_set_retval(buf, buf_len, file, file_len, return_value);
 
 	/* free the buffer */
 	free(buf);
@@ -1717,13 +1599,13 @@ static PHP_FUNCTION(epeg_close)
 	php_epeg_t *im = NULL;
 
 	/* parse the arguments */
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zim) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zim) == FAILURE) {
 		return;
 	}
-	im = php_epeg_fetch_image_from_resource(zim TSRMLS_CC);
+	im = php_epeg_fetch_image_from_resource(zim);
 
 	/* free the resource */
-	FREE_RESOURCE(zim TSRMLS_CC);
+	FREE_RESOURCE(zim);
  }
 /* }}} epeg_close */
 

@@ -34,6 +34,11 @@
 /* @todo why is this necessary? */
 #define PHP_EPEG_ENABLE_DECODE_BOUNDS_SET
 
+// Related?: https://github.com/php/php-src/commit/43a7d95016761787cace63fb52e93e27e123d0cc
+#ifndef ZEND_ACC_CTOR
+#define ZEND_ACC_CTOR 0
+#endif
+
 static int le_epeg;
 static zend_class_entry *ce_Epeg = NULL;
 static zend_object_handlers _php_epeg_object_handlers;
@@ -395,7 +400,7 @@ ZEND_GET_MODULE(epeg)
 static PHP_MINIT_FUNCTION(epeg)
 {
 	zend_class_entry ce;
-	zend_class_entry * exception_ce = zend_exception_get_default(TSRMLS_C);
+	zend_class_entry * exception_ce = zend_exception_get_default();
 
 	PHP_EPEG_REGISTER_CONSTANT(EPEG_GRAY8);
 	PHP_EPEG_REGISTER_CONSTANT(EPEG_YUV8);
@@ -1038,7 +1043,7 @@ static PHP_FUNCTION(epeg_open)
 		intern = php_epeg_object_fetch_object(obj);
 		if (intern->ptr != NULL) {
 			php_epeg_free(im);
-			zend_throw_exception(zend_exception_get_default(TSRMLS_C),
+			zend_throw_exception(zend_exception_get_default(),
 					"Epeg already initialized", 0);
 			return;
 		}

@@ -1,6 +1,9 @@
 {
   pkgs ? import <nixpkgs> {},
   php ? pkgs.php,
+  buildPecl ? pkgs.callPackage <nixpkgs/pkgs/build-support/build-pecl.nix> {
+    inherit php;
+  },
 
   phpEpegVersion ? null,
   phpEpegSrc ? ./.,
@@ -8,6 +11,6 @@
 }:
 
 pkgs.callPackage ./derivation.nix {
-  inherit php phpEpegVersion phpEpegSrc phpEpegSha256;
+  inherit php buildPecl phpEpegVersion phpEpegSrc phpEpegSha256;
 }
 

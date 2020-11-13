@@ -1,0 +1,4 @@
+*.h             linguist-language=C
+*.nix           linguist-documentation=true
+/.github/*      linguist-documentation=true
+/nix/*          linguist-documentation=true

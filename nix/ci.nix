@@ -1,7 +1,7 @@
 let
     generateTestsForPlatform = { pkgs, php, buildPecl }:
         pkgs.recurseIntoAttrs {
-            epeg = pkgs.callPackage ./default.nix {
+            epeg = pkgs.callPackage ../default.nix {
                inherit php buildPecl;
             };
         };

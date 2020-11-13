@@ -21,6 +21,6 @@
   }
 }:
 
-pkgs.callPackage ./derivation.nix {
+pkgs.callPackage ./nix/derivation.nix {
   inherit php buildPecl phpEpegVersion phpEpegSrc phpEpegSha256;
 }

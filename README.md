@@ -2,7 +2,6 @@
 # php-epeg
 
 [![GitHub Linux Build Status](https://github.com/jbboehr/php-epeg/workflows/linux/badge.svg)](https://github.com/jbboehr/php-epeg/actions?query=workflow%3Alinux)
-[![GitHub OSX Build Status](https://github.com/jbboehr/php-epeg/workflows/osx/badge.svg)](https://github.com/jbboehr/php-epeg/actions?query=workflow%3Aosx)
 [![GitHub Docker Build Status](https://github.com/jbboehr/php-epeg/workflows/docker/badge.svg)](https://github.com/jbboehr/php-epeg/actions?query=workflow%3Adocker)
 [![Coverage Status](https://coveralls.io/repos/jbboehr/php-epeg/badge.svg?branch=master&service=github)](https://coveralls.io/github/jbboehr/php-epeg?branch=master)
 

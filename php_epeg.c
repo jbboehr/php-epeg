@@ -221,6 +221,9 @@ php_epeg_fetch_image_from_object(zval * obj)
 
 /* {{{ argument informations */
 
+ZEND_BEGIN_ARG_INFO(arginfo_epeg_noargs, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO(arginfo_epeg__epeg, 0)
 	ZEND_ARG_INFO(0, image)
 ZEND_END_ARG_INFO()
@@ -329,16 +332,16 @@ static zend_function_entry epeg_methods[] = {
 	PHP_ME(Epeg, openFile,   arginfo_epeg_file_open,   ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Epeg, openBuffer, arginfo_epeg_memory_open, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME_MAPPING(__construct,             epeg_open,                      arginfo_epeg_open,          ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
-	PHP_ME_MAPPING(getSize,                 epeg_size_get,                  NULL,                                       ZEND_ACC_PUBLIC)
+	PHP_ME_MAPPING(getSize,                 epeg_size_get,                  arginfo_epeg_noargs,                        ZEND_ACC_PUBLIC)
 	PHP_ME_MAPPING(setDecodeSize,           epeg_decode_size_set,           arginfo_epeg_decode_size_set_m,             ZEND_ACC_PUBLIC)
 #ifdef PHP_EPEG_ENABLE_DECODE_BOUNDS_SET
 	PHP_ME_MAPPING(setDecodeBounds,         epeg_decode_bounds_set,         arginfo_epeg_decode_bounds_set_m,           ZEND_ACC_PUBLIC)
 #endif
 	PHP_ME_MAPPING(setDecodeColorSpace,     epeg_decode_colorspace_set,     arginfo_epeg_decode_colorspace_set_m,       ZEND_ACC_PUBLIC)
-	PHP_ME_MAPPING(getComment,              epeg_comment_get,               NULL,                                       ZEND_ACC_PUBLIC)
+	PHP_ME_MAPPING(getComment,              epeg_comment_get,               arginfo_epeg_noargs,                        ZEND_ACC_PUBLIC)
 	PHP_ME_MAPPING(setComment,              epeg_comment_set,               arginfo_epeg_comment_set_m,                 ZEND_ACC_PUBLIC)
 	PHP_ME_MAPPING(setQuality,              epeg_quality_set,               arginfo_epeg_quality_set_m,                 ZEND_ACC_PUBLIC)
-	PHP_ME_MAPPING(getThumbnailComments,    epeg_thumbnail_comments_get,    NULL,                                       ZEND_ACC_PUBLIC)
+	PHP_ME_MAPPING(getThumbnailComments,    epeg_thumbnail_comments_get,    arginfo_epeg_noargs,                        ZEND_ACC_PUBLIC)
 	PHP_ME_MAPPING(enableThumbnailComments, epeg_thumbnail_comments_enable, arginfo_epeg_thumbnail_comments_enable_m,   ZEND_ACC_PUBLIC)
 	PHP_ME_MAPPING(encode,                  epeg_encode,                    arginfo_epeg__output_m,                     ZEND_ACC_PUBLIC)
 	PHP_ME_MAPPING(trim,                    epeg_trim,                      arginfo_epeg__output_m,                     ZEND_ACC_PUBLIC)

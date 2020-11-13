@@ -10,12 +10,6 @@ export PHP_WITH_EXT="`which php` -d extension=`pwd`/modules/epeg.so"
 
 export DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
 
-# friendsofphp/php-cs-fixer v2.9.3 requires php ^5.6 || >=7.0 <7.3
-# We'll remove this in the future
-if [[ "${PHP_MAJOR_MINOR}" = "7.3" ]] || [[ "${PHP_MAJOR_MINOR}" = "7.4" ]]; then
-    export DEFAULT_COMPOSER_FLAGS="${DEFAULT_COMPOSER_FLAGS} --ignore-platform-reqs"
-fi
-
 export NO_INTERACTION=1
 export REPORT_EXIT_STATUS=1
 export TEST_PHP_EXECUTABLE=`which php`
@@ -27,7 +21,7 @@ export PKG_CONFIG_PATH="$HOME/epeg/lib/pkgconfig:${PKG_CONFIG_PATH}"
 function install_epeg() (
     set -e -o pipefail
 
-    git clone https://github.com/jbboehr/epeg.git
+    git clone https://github.com/mattes/epeg.git
     cd epeg
     ./autogen.sh
     ./configure --prefix=$HOME/epeg
@@ -37,11 +31,6 @@ function install_epeg() (
 
 function before_install() (
     set -e -o pipefail
-
-    # Don't install this unless we're actually on travis
-    if [[ "${COVERAGE}" = "true" ]] && [[ "${TRAVIS}" = "true" ]]; then
-        gem install coveralls-lcov
-    fi
 
     install_epeg
 )
@@ -86,9 +75,6 @@ function after_success() (
             --remove coverage.info "/home/travis/build/include/*" \
             --compat-libtool \
             --output-file coverage.info
-
-        echo "Uploading coverage"
-        coveralls-lcov coverage.info
     fi
 )
 
